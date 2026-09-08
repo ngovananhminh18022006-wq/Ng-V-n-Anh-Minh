@@ -1,0 +1,22 @@
+BÀI TẬP 4: THIẾT KẾ CỔNG THANH TOÁN ĐA PHƯƠNG THỨC
+* **Khối kiến thức trọng tâm:** Abstract Classes vs Interfaces (3.5), Access Modifiers nội bộ (3.2).
+* **Mục tiêu:** Áp dụng bảng so sánh giữa Abstract Class (mối quan hệ cốt lõi "Is-A") và Interface (năng lực giao tiếp "Can-Do", hỗ trợ đa triển khai).
+
+### Yêu cầu thiết kế:
+1. **Định nghĩa các Interface**:
+   * `IPayable`: Chứa phương thức `bool ProcessPayment(decimal amount);`.
+   * `IRefundable`: Chứa phương thức `bool ProcessRefund(decimal amount, string reason);`.
+2. **Lớp trừu tượng `PaymentGateway` (Abstract Class)**:
+   * Các thuộc tính: `TransactionId` (`string`, `init`), `CreationDate` (`DateTime`, `init`), `Status` (`string`, `protected set`).
+   * Constructor `protected PaymentGateway(string transactionId)` khởi tạo mã giao dịch và gán `Status = "Pending"`.
+   * Phương thức trừu tượng: `public abstract void ValidateConnection();`.
+   * Phương thức thông thường: `public virtual void LogTransaction(string message)` ghi nhật ký giao dịch kèm mã `TransactionId`.
+3. **Lớp cụ thể `MomoPayment`**:
+   * Kế thừa từ `PaymentGateway` và triển khai cả 2 interface: `IPayable`, `IRefundable`.
+   * Bổ sung thuộc tính riêng: `PhoneNumber` (`string`).
+   * Ghi đè phương thức `ValidateConnection()`: In thông báo kiểm tra kết nối API MoMo.
+   * Cài đặt `ProcessPayment`: Kiểm tra thông tin hợp lệ, đổi `Status = "Success"`, trả về `true`.
+   * Cài đặt `ProcessRefund`: Ghi nhận lý do hoàn tiền, đổi `Status = "Refunded"`, trả về `true`.
+4. **Kịch bản kiểm thử (`Main`):**
+   * Khởi tạo đối tượng `MomoPayment`.
+   * Ép kiểu đối tượng sang các interface `IPayable` và `IRefundable` để gọi độc lập các hành vi thanh toán và hoàn tiền.
