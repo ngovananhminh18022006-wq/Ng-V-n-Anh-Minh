@@ -1,0 +1,159 @@
+using System;
+class BankAccount
+{
+    // Hạn mức duy trì tối thiểu
+    private const decimal MIN_BALANCE = 50_000;
+    // Biến static dùng để tự động tăng số tài khoản
+    private static long _nextAccountNumber = 1_000_000_001;
+    // Backing field cho Balance
+    private decimal _balance;
+    // Số tài khoản: chỉ được gán khi khởi tạo
+    public long AccountNumber { get; init; }
+    // Tên chủ tài khoản
+    private string _accountHolder;
+    public string AccountHolder
+    {
+        get { return _accountHolder; }
+        set
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                throw new ArgumentException(
+                    "Tên chủ tài khoản không được để trống!"
+                );
+            }
+            _accountHolder = value;
+        }
+    }
+    // Số dư: chỉ cho phép đọc từ bên ngoài
+    public decimal Balance
+    {
+        get { return _balance; }
+    }
+    // Constructor
+    public BankAccount(string accountHolder, decimal initialBalance)
+    {
+        // Kiểm tra tên chủ tài khoản
+        AccountHolder = accountHolder;
+        // Kiểm tra số dư ban đầu
+        if (initialBalance < MIN_BALANCE)
+        {
+            throw new ArgumentException(
+                "Số dư ban đầu phải >= 50.000 VNĐ!"
+            );
+        }
+        // Tự động cấp số tài khoản
+        AccountNumber = _nextAccountNumber++;
+        // Gán số dư ban đầu
+        _balance = initialBalance;
+    }
+    // Nạp tiền
+    public void Deposit(decimal amount)
+    {
+        if (amount <= 0)
+        {
+            throw new ArgumentException(
+                "Số tiền nạp phải lớn hơn 0!"
+            );
+        }
+        _balance += amount;
+        Console.WriteLine(
+            $"Nạp thành công {amount:N0} VNĐ."
+        );
+    }
+    // Rút tiền
+    public bool Withdraw(decimal amount)
+    {
+        if (amount <= 0)
+        {
+            throw new ArgumentException(
+                "Số tiền rút phải lớn hơn 0!"
+            );
+        }
+        // Kiểm tra số dư sau khi rút
+        if (_balance - amount < MIN_BALANCE)
+        {
+            Console.WriteLine(
+                "Rút tiền thất bại! Số dư không được thấp hơn 50.000 VNĐ."
+            );
+            return false;
+        }
+        _balance -= amount;
+        Console.WriteLine(
+            $"Rút thành công {amount:N0} VNĐ."
+        );
+        return true;
+    }
+    // Hiển thị thông tin tài khoản
+    public void DisplayInfo()
+    {
+        Console.WriteLine("------------------------------");
+        Console.WriteLine($"Số tài khoản : {AccountNumber}");
+        Console.WriteLine($"Chủ tài khoản: {AccountHolder}");
+        Console.WriteLine($"Số dư        : {Balance:N0} VNĐ");
+        Console.WriteLine("------------------------------");
+    }
+}
+class Program
+{
+    static void Main()
+    {
+        try
+        {
+            // Khởi tạo tài khoản thứ nhất
+            BankAccount account1 = new BankAccount(
+                "Nguyen Van A",
+                1_000_000
+            );
+            // Khởi tạo tài khoản thứ hai
+            BankAccount account2 = new BankAccount(
+                "Tran Thi B",
+                2_000_000
+            );
+            // Hiển thị thông tin ban đầu
+            Console.WriteLine("THÔNG TIN BAN ĐẦU");
+            account1.DisplayInfo();
+            account2.DisplayInfo();
+            // =========================
+            // TEST TÀI KHOẢN 1
+            // =========================
+            Console.WriteLine("\n--- Thao tác tài khoản 1 ---");
+            // Nạp 500.000
+            account1.Deposit(500_000);
+            // Rút 200.000
+            account1.Withdraw(200_000);
+            // Hiển thị lại
+            account1.DisplayInfo();
+            // Rút quá hạn mức
+            Console.WriteLine("\nThử rút quá hạn mức:");
+            account1.Withdraw(1_300_000);
+            // =========================
+            // TEST TÀI KHOẢN 2
+            // =========================
+            Console.WriteLine("\n--- Thao tác tài khoản 2 ---");
+            // Nạp 1.000.000
+            account2.Deposit(1_000_000);
+            // Rút 500.000
+            account2.Withdraw(500_000);
+            account2.DisplayInfo();
+            // =========================
+            // TEST TÀI KHOẢN KHÔNG HỢP LỆ
+            // =========================
+            Console.WriteLine(
+                "\n--- Thử tạo tài khoản không hợp lệ ---"
+            );
+            BankAccount account3 = new BankAccount(
+                "Le Van C",
+                30_000
+            );
+        }
+        catch (ArgumentException ex)
+        {
+            Console.WriteLine(
+                $"Lỗi: {ex.Message}"
+            );
+        }
+        Console.WriteLine("\nNhấn phím bất kỳ để kết thúc...");
+        Console.ReadKey();
+    }
+}
