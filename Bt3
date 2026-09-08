@@ -1,0 +1,114 @@
+using System;
+using System.Collections.Generic;
+
+public class DiscountCalculator
+{
+    public decimal ApplyDiscount(decimal totalAmount)
+    {
+        return totalAmount * 0.95m;
+    }
+
+    public decimal ApplyDiscount(decimal totalAmount, double percentage)
+    {
+        return totalAmount * (1 - (decimal)percentage / 100);
+    }
+
+    public decimal ApplyDiscount(decimal totalAmount, decimal fixedVoucher, decimal minimumOrder)
+    {
+        if (totalAmount >= minimumOrder)
+        {
+            return totalAmount - fixedVoucher;
+        }
+
+        return totalAmount;
+    }
+}
+
+public class DeliveryService
+{
+    public string OrderId { get; set; }
+    public double DistanceKm { get; set; }
+
+    public DeliveryService(string orderId, double distanceKm)
+    {
+        OrderId = orderId;
+        DistanceKm = distanceKm;
+    }
+
+    public virtual decimal CalculateShippingFee()
+    {
+        return (decimal)DistanceKm * 5000;
+    }
+}
+
+public class ExpressDelivery : DeliveryService
+{
+    public ExpressDelivery(string orderId, double distanceKm)
+        : base(orderId, distanceKm)
+    {
+    }
+
+    public override decimal CalculateShippingFee()
+    {
+        return (decimal)DistanceKm * 5000 * 1.5m + 20000;
+    }
+}
+
+public class EcoDelivery : DeliveryService
+{
+    public EcoDelivery(string orderId, double distanceKm)
+        : base(orderId, distanceKm)
+    {
+    }
+
+    public override decimal CalculateShippingFee()
+    {
+        decimal fee = (decimal)DistanceKm * 5000;
+
+        if (DistanceKm > 10)
+        {
+            fee *= 0.9m;
+        }
+
+        return fee;
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        DiscountCalculator calculator = new DiscountCalculator();
+
+        decimal result1 = calculator.ApplyDiscount(1000000);
+        decimal result2 = calculator.ApplyDiscount(1000000, 10);
+        decimal result3 = calculator.ApplyDiscount(1000000, 100000, 500000);
+
+        Console.WriteLine("GIAM GIA DON HANG");
+        Console.WriteLine("Giam mac dinh 5%: " + result1.ToString("N0") + " VNĐ");
+        Console.WriteLine("Giam 10%: " + result2.ToString("N0") + " VNĐ");
+        Console.WriteLine("Giam voucher 100.000: " + result3.ToString("N0") + " VNĐ");
+
+        Console.WriteLine();
+
+        List<DeliveryService> deliveries = new List<DeliveryService>();
+
+        deliveries.Add(new ExpressDelivery("DH001", 5));
+        deliveries.Add(new EcoDelivery("DH002", 8));
+        deliveries.Add(new EcoDelivery("DH003", 15));
+
+        Console.WriteLine("PHI VAN CHUYEN");
+
+        foreach (DeliveryService delivery in deliveries)
+        {
+            Console.WriteLine(
+                "Ma don: " + delivery.OrderId +
+                " | Quang duong: " + delivery.DistanceKm + " km" +
+                " | Phi van chuyen: " +
+                delivery.CalculateShippingFee().ToString("N0") + " VNĐ"
+            );
+        }
+
+        Console.ReadKey();
+    }
+}
